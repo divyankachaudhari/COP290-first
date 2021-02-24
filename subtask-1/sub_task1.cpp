@@ -17,21 +17,24 @@ struct userdata {
 
 
 void mouseHandler(int event, int x, int y, int flags, void* data_ptr) {
-    if  (event == EVENT_LBUTTONDOWN) {
+    if  (event == 1) {
+        // Taking input of the mouse click
         userdata *data = ((userdata *) data_ptr);
-        circle(data->im, Point(x,y),3,Scalar(0,0,255), 5, cv::LINE_AA);
+        // Using small red dots/circles wherever the mouse clicks for user to know
+        circle(data->im, Point(x,y),2,Scalar(0,0,600), 5, cv::LINE_AA);
+        // To show the Image with Red dots
         imshow("Image", data->im);
-        if (data->points.size() < 4) {
-            data->points.push_back(Point2f(x,y));
-        }
+        // Saving the co-ordinates of mouse click in data
+        data->points.push_back(Point2f(x,y));
+
     }
 }
 
 int main( int argc, char** argv) {
     fast;
-    // Read source image.
-    // Mat im_src = imread("book1.jpg");
-    // String name;
+// READING AND FINDING HOMOGRAPHY ---------------------------------------------
+
+    // Read source image. Inputted from user.
     string name = argv[1];
     Mat im_src = imread(name);
 
@@ -41,20 +44,22 @@ int main( int argc, char** argv) {
     // Create a vector of destination points.
     vector<Point2f> pts_dst;
 
-    // points as given by maam // choose from top left anti-clockwise
+    // Points as given by ma'am.
+    // Choose from top left anti-clockwise
     pts_dst.pb(Point2f(472,52));
     pts_dst.pb(Point2f(472, 830));
     pts_dst.pb(Point2f(800, 830));
     pts_dst.pb(Point2f(800, 52));
+
 
     // Set data for mouse event
     Mat im_temp = im_src.clone();
     userdata data;
     data.im = im_temp;
 
-    cout << "Anti-clockwise fashion, starting from top-left" << endl;
+    cout << "Choose the point in anti-clockwise fashion, starting from top-left." << endl;
 
-    // show image and wait 
+    // show image and wait
     imshow("Image", im_temp);
     // set the callback function for any mouse event
     setMouseCallback("Image", mouseHandler, &data);
@@ -62,26 +67,33 @@ int main( int argc, char** argv) {
 
     // calculate the homography
     Mat h = findHomography(data.points, pts_dst);
+
     // Warp source image to destination
     warpPerspective(im_src, im_dst, h, size);
 
+// SHOWING THE UNCROPPED IMAGE AND SAVING IT ----------------------------------
     // Show image
     imshow("Image", im_dst);
-    bool check1 = imwrite("birds_eye_view.jpg", im_dst); 
-    // if the image is not saved 
-	if (check1 == false) { 
-	    cout << "Mission - Saving the image, FAILED" << endl; 
-	  
-	    // wait for any key to be pressed 
-	    cin.get(); 
-	    return -1; 
-	} 
-	cout << "Successfully saved the uncropped birds view image. " << endl; 
+
+    // saving the uncropped image
+    bool check1 = imwrite("birds_eye_view.jpg", im_dst);
+    // if the image is not saved
+	if (check1 == false) {
+	    cout << "Mission failed succesfully: could not save the image. Try again?" << endl;
+
+	    // wait for any key to be pressed
+	    cin.get();
+	    return -1;
+	}
+	cout << "Successfully saved the uncropped birds view image. Cropping it now." << endl;
+
+
+// CROPPING THE IMAGE, SHOWING AND SAVING IT-----------------------------------
 
     // now crop
     vector<pair<int, int>> mouse_clicks(4, {0, 0});
     vector<pair<int, int>> crop_this(4, {0, 0});
-    
+
     for(int i=0; i<4; i++) {
         mouse_clicks[i].ff = data.points[i].x;
         mouse_clicks[i].ss = data.points[i].y;
@@ -95,7 +107,7 @@ int main( int argc, char** argv) {
         crop_this[i].ff = pt2.at<double>(0);
         crop_this[i].ss = pt2.at<double>(1);
     }
-	
+
     Mat bird_view = imread("birds_eye_view.jpg", 1);
     int crop_w = crop_this[2].ff - crop_this[0].ff;
     int crop_h = crop_this[1].ss - crop_this[0].ss;
@@ -104,20 +116,20 @@ int main( int argc, char** argv) {
     ROI.copyTo(croppedImage);
 
     imshow("cropped_birds_view", croppedImage);
-    
+
+    // saving the cropped image
     bool check2 = imwrite("cropped_birds_view.jpg", croppedImage);
-    // if the image is not saved 
-    if (check2 == false) { 
-        cout << "Mission - Saving the image, FAILED" << endl; 
-      
-        // wait for any key to be pressed 
-        cin.get(); 
-        return -1; 
-    } 
-    cout << "Successfully saved the cropped birds view image. " << endl; 
+    // if the image is not saved
+    if (check2 == false) {
+        cout << "Mission failed succesfully: could not save the image. Try again?" << endl;
+
+        // wait for any key to be pressed
+        cin.get();
+        return -1;
+    }
+    cout << "Successfully saved the cropped birds view image. \nMission accomplished." << endl;
 
     waitKey(0);
 
     return 0;
 }
-
