@@ -60,28 +60,25 @@ void cropImage(Mat &croppedImage, Mat &bird_view, vector<pair<int, int>> &mouse_
 
   ROI.copyTo(croppedImage);
 }
-
-int main( int argc, char** argv) {
-    fast;
-// READING AND FINDING HOMOGRAPHY ---------------------------------------------
-
-    // Read source image. Inputted from user.
-    string name = argv[1];
-    Mat im_src = imread(name);
-
-    Size size = im_src.size();
-    Mat im_dst = Mat::zeros(size,CV_8UC3);
-
-    // Create a vector of destination points.
-    vector<Point2f> pts_dst;
-
-    // Points as given by ma'am.
-    // Choose from top left anti-clockwise
+  void destPoints(vector<Point2f> &pts_dst){
     pts_dst.pb(Point2f(472,52));
     pts_dst.pb(Point2f(472, 830));
     pts_dst.pb(Point2f(800, 830));
     pts_dst.pb(Point2f(800, 52));
 
+  }
+int main( int argc, char** argv) {
+    fast;
+// READING AND FINDING HOMOGRAPHY ---------------------------------------------
+
+    string name = argv[1]; // Read source image. Inputted from user.
+    Mat im_src = imread(name);
+
+    Size size = im_src.size();
+    Mat im_dst = Mat::zeros(size,CV_8UC3);
+
+    vector<Point2f> pts_dst;   // Create a vector of destination points.
+    destPoints(pts_dst); // Add points to the vector
 
     // Set data for mouse event
     Mat im_temp = im_src.clone();
