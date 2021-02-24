@@ -30,6 +30,37 @@ void mouseHandler(int event, int x, int y, int flags, void* data_ptr) {
     }
 }
 
+int checkImage(bool check) {
+  if (check == false) {
+      cout << "Mission failed succesfully: could not save the image. Try again?" << endl;
+      // wait for any key to be pressed
+      cin.get();
+      return -1;
+  }
+  return 0;
+}
+
+void cropImage(Mat &croppedImage, Mat &bird_view, vector<pair<int, int>> &mouse_clicks, vector<pair<int, int>> &crop_this, userdata &data, Mat &h) {
+  for(int i=0; i<4; i++) {
+      mouse_clicks[i].ff = data.points[i].x;
+      mouse_clicks[i].ss = data.points[i].y;
+      // cout<<mouse_clicks[i].ff<<" "<<mouse_clicks[i].ss<<endl;
+
+      Mat pt1 = (Mat_<double>(3, 1) << mouse_clicks[i].ff, mouse_clicks[i].ss, 1);
+      Mat pt2 = h*pt1;
+      pt2 /= pt2.at<double>(2);
+
+      // cout<<pt2.at<double>(0)<<" "<<pt2.at<double>(1)<<" "<<pt2.at<double>(2)<<"kb"<<endl;
+      crop_this[i].ff = pt2.at<double>(0);
+      crop_this[i].ss = pt2.at<double>(1);
+  }
+  int crop_w = crop_this[2].ff - crop_this[0].ff;
+  int crop_h = crop_this[1].ss - crop_this[0].ss;
+  Mat ROI(bird_view, Rect(crop_this[0].ff, crop_this[0].ss, crop_w, crop_h));
+
+  ROI.copyTo(croppedImage);
+}
+
 int main( int argc, char** argv) {
     fast;
 // READING AND FINDING HOMOGRAPHY ---------------------------------------------
@@ -77,56 +108,24 @@ int main( int argc, char** argv) {
 
     // saving the uncropped image
     bool check1 = imwrite("birds_eye_view.jpg", im_dst);
-    // if the image is not saved
-	if (check1 == false) {
-	    cout << "Mission failed succesfully: could not save the image. Try again?" << endl;
 
-	    // wait for any key to be pressed
-	    cin.get();
-	    return -1;
-	}
-	cout << "Successfully saved the uncropped birds view image. Cropping it now." << endl;
-
+    checkImage(check1);
+	  cout << "Successfully saved the uncropped birds view image. Cropping it now." << endl;
 
 // CROPPING THE IMAGE, SHOWING AND SAVING IT-----------------------------------
 
     // now crop
     vector<pair<int, int>> mouse_clicks(4, {0, 0});
     vector<pair<int, int>> crop_this(4, {0, 0});
-
-    for(int i=0; i<4; i++) {
-        mouse_clicks[i].ff = data.points[i].x;
-        mouse_clicks[i].ss = data.points[i].y;
-        // cout<<mouse_clicks[i].ff<<" "<<mouse_clicks[i].ss<<endl;
-
-        Mat pt1 = (Mat_<double>(3, 1) << mouse_clicks[i].ff, mouse_clicks[i].ss, 1);
-        Mat pt2 = h*pt1;
-        pt2 /= pt2.at<double>(2);
-
-        // cout<<pt2.at<double>(0)<<" "<<pt2.at<double>(1)<<" "<<pt2.at<double>(2)<<"kb"<<endl;
-        crop_this[i].ff = pt2.at<double>(0);
-        crop_this[i].ss = pt2.at<double>(1);
-    }
-
-    Mat bird_view = imread("birds_eye_view.jpg", 1);
-    int crop_w = crop_this[2].ff - crop_this[0].ff;
-    int crop_h = crop_this[1].ss - crop_this[0].ss;
-    Mat ROI(bird_view, Rect(crop_this[0].ff, crop_this[0].ss, crop_w, crop_h));
     Mat croppedImage;
-    ROI.copyTo(croppedImage);
+    Mat bird_view = imread("birds_eye_view.jpg", 1);
 
+    cropImage(croppedImage,bird_view, mouse_clicks, crop_this, data, h);
     imshow("cropped_birds_view", croppedImage);
 
-    // saving the cropped image
+    // Saving the cropped image
     bool check2 = imwrite("cropped_birds_view.jpg", croppedImage);
-    // if the image is not saved
-    if (check2 == false) {
-        cout << "Mission failed succesfully: could not save the image. Try again?" << endl;
-
-        // wait for any key to be pressed
-        cin.get();
-        return -1;
-    }
+    checkImage(check2);
     cout << "Successfully saved the cropped birds view image. \nMission accomplished." << endl;
 
     waitKey(0);
