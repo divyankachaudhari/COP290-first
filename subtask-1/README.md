@@ -12,7 +12,8 @@
 ## Why:
 	To make object detection and other computer vision based stuff easier and more accurate.
 	Also, why do we even exist?
+		To transcend -- your partner
 
 ## Contributors:
-	Divyanka Chaudhary 2019CS50429
+	Divyanka Chaudhari 2019CS50429
 	Kshitiz Bansal 2019CS50438
