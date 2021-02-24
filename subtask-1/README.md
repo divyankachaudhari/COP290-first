@@ -1,4 +1,4 @@
-# Sub_task1 Desccription
+# Sub_task1 Description
 
 ## How to Run:
 	1) Download the files
