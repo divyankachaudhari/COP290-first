@@ -6,7 +6,6 @@
 #define ff first
 #define ss second
 
-
 using namespace cv;
 using namespace std;
 
@@ -60,25 +59,27 @@ void cropImage(Mat &croppedImage, Mat &bird_view, vector<pair<int, int>> &mouse_
 
   ROI.copyTo(croppedImage);
 }
-  void destPoints(vector<Point2f> &pts_dst){
-    pts_dst.pb(Point2f(472,52));
-    pts_dst.pb(Point2f(472, 830));
-    pts_dst.pb(Point2f(800, 830));
-    pts_dst.pb(Point2f(800, 52));
 
-  }
+void destPoints(vector<Point2f> &pts_dst){
+  pts_dst.pb(Point2f(472,52));
+  pts_dst.pb(Point2f(472, 830));
+  pts_dst.pb(Point2f(800, 830));
+  pts_dst.pb(Point2f(800, 52));
+
+}
+
 int main( int argc, char** argv) {
     fast;
 // READING AND FINDING HOMOGRAPHY ---------------------------------------------
-
-    string name = argv[1]; // Read source image. Inputted from user.
+    // Read source image. Inputted from user.
+    string name = argv[1];
     Mat im_src = imread(name);
-
     Size size = im_src.size();
     Mat im_dst = Mat::zeros(size,CV_8UC3);
 
-    vector<Point2f> pts_dst;   // Create a vector of destination points.
-    destPoints(pts_dst); // Add points to the vector
+    // Create vector and add destination points to it
+    vector<Point2f> pts_dst;
+    destPoints(pts_dst);
 
     // Set data for mouse event
     Mat im_temp = im_src.clone();
@@ -87,16 +88,13 @@ int main( int argc, char** argv) {
 
     cout << "Choose the point in anti-clockwise fashion, starting from top-left." << endl;
 
-    // show image and wait
+    // Show image and wait for mouse clicks
     imshow("Image", im_temp);
-    // set the callback function for any mouse event
     setMouseCallback("Image", mouseHandler, &data);
     waitKey(0);
 
-    // calculate the homography
+    // Calculate the homography & warp source image to destination
     Mat h = findHomography(data.points, pts_dst);
-
-    // Warp source image to destination
     warpPerspective(im_src, im_dst, h, size);
 
 // SHOWING THE UNCROPPED IMAGE AND SAVING IT ----------------------------------
@@ -105,12 +103,10 @@ int main( int argc, char** argv) {
 
     // saving the uncropped image
     bool check1 = imwrite("birds_eye_view.jpg", im_dst);
-
     checkImage(check1);
 	  cout << "Successfully saved the uncropped birds view image. Cropping it now." << endl;
 
 // CROPPING THE IMAGE, SHOWING AND SAVING IT-----------------------------------
-
     // now crop
     vector<pair<int, int>> mouse_clicks(4, {0, 0});
     vector<pair<int, int>> crop_this(4, {0, 0});
