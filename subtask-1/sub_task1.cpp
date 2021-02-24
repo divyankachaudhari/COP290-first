@@ -1,5 +1,4 @@
 #include <opencv2/opencv.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string>
@@ -20,12 +19,13 @@ struct userdata {
     vector<Point2f> points;
 };
 
+
 void mouseHandler(int event, int x, int y, int flags, void* data_ptr) {
     if  (event == 1) {
         // Taking input of the mouse click
         userdata *data = ((userdata *) data_ptr);
         // Using small red dots/circles wherever the mouse clicks for user to know
-        circle(data->im, Point(x,y),2,Scalar(0,0,255), 5, cv::LINE_AA);
+        circle(data->im, Point(x,y),2,Scalar(0,0,600), 5, cv::LINE_AA);
         // To show the Image with Red dots
         imshow("Image", data->im);
         // Saving the co-ordinates of mouse click in data
@@ -86,10 +86,10 @@ inline bool isFileExist (const std::string& name) {
 }
 
 int checkFile(bool check1, bool check2) {
-  if (check1 ==false || check2 == false) {
+  if (check1 == false || check2 == false) {
       cout << "Hold up! \nMission failed succesfully: Could not find that image, or maybe that file isn't an image. \nDid you check if that file exists in this directory?" << endl;
       // wait for any key to be pressed
-      //cin.get();
+      cin.get();
       return -1;
   }
   return 0;
@@ -110,8 +110,6 @@ int main( int argc, char** argv) {
 
     else {
       Mat im_src = imread(name);
-      Mat im_temp = im_src.clone();
-      cvtColor(im_src, im_temp, COLOR_BGR2GRAY);
       Size size = im_src.size();
       Mat im_dst = Mat::zeros(size,CV_8UC3);
 
@@ -120,11 +118,10 @@ int main( int argc, char** argv) {
       destPoints(pts_dst);
 
       // Set data for mouse event
-      // Mat im_temp = im_src.clone();
+      Mat im_temp = im_src.clone();
       userdata data;
       data.im = im_temp;
-      // cvtColor(im_temp, im_temp, COLOR_BGR2GRAY);
-      // cvtColor(im_src, im_src,COLOR_BGR2GRAY);
+
       cout << "Choose the point in anti-clockwise fashion, starting from top-left." << endl;
 
       // Show image and wait for mouse clicks
@@ -134,7 +131,7 @@ int main( int argc, char** argv) {
 
       // Calculate the homography & warp source image to destination
       Mat h = findHomography(data.points, pts_dst);
-      warpPerspective(im_temp, im_dst, h, size);
+      warpPerspective(im_src, im_dst, h, size);
 
   // SHOWING THE UNCROPPED IMAGE AND SAVING IT ----------------------------------
       // Show image
