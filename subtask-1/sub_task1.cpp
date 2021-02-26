@@ -149,7 +149,7 @@ int main( int argc, char** argv) {
       Mat croppedImage;
       Mat bird_view = imread("birds_eye_view.jpg", 1);
 
-      cropImage(croppedImage,bird_view, mouse_clicks, crop_this, data, h);
+      cropImage(croppedImage, bird_view, mouse_clicks, crop_this, data, h);
       imshow("cropped_birds_view", croppedImage);
 
       // Saving the cropped image
