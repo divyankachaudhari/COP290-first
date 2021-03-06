@@ -4,11 +4,43 @@
 using namespace cv;
 using namespace std;
 
-float queue_density(Mat croppedFilteredFrame){
+float queueDensity(Mat croppedFilteredFrame){
 
-  float white_area = countNonZero(croppedFilteredFrame);
-  float total_area = croppedFilteredFrame.total();
-  float queue_density = white_area/total_area;
+  float whiteArea = countNonZero(croppedFilteredFrame);
+  float totalArea = croppedFilteredFrame.total();
+  float queueDensity = whiteArea/totalArea;
 
-  return queue_density;
+  return queueDensity;
+}
+
+float movingDensity(Mat previousFrame, Mat currentFrame){
+
+  Mat flow(previousFrame.size(), CV_32FC2);
+  calcOpticalFlowFarneback(previousFrame, currentFrame, flow, 0.5, 3, 15, 3, 5, 1.2, 0);
+
+  Mat flow_parts[2];
+
+  split(flow, flow_parts);
+
+  Mat magnitude, angle, magn_norm;
+  cartToPolar(flow_parts[0], flow_parts[1], magnitude, angle, true);
+
+  normalize(magnitude, magn_norm, 0.0f, 1.0f, NORM_MINMAX);
+
+  angle *= ((1.f / 360.f)*(180.f / 255.f));
+
+  Mat _hsv[3], hsv, hsv8, bgr;
+  _hsv[0] = angle;
+  _hsv[1] = Mat::ones(angle.size(), CV_32F);
+  _hsv[2] = magn_norm;
+
+  merge(_hsv, 3, hsv);
+  hsv.convertTo(hsv8, CV_8U, 255.0);
+
+  float movement = sum(hsv8)[2];
+  float maxMovement = hsv8.total()*255.0;
+
+  float movingDensity = movement/maxMovement;
+
+  return movingDensity;
 }
