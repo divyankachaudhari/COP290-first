@@ -8,6 +8,7 @@ using namespace cv;
 using namespace std;
 
 Mat subtract_bg(Mat background, Mat current);
+Mat filterImage(Mat subtractedImage);
 void print_pixels(Mat image);
 
 #endif

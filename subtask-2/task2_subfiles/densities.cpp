@@ -17,7 +17,7 @@ float queueDensity(Mat croppedFilteredFrame){
         // cout<<endl;
     }
     return (white)/((float)croppedFilteredFrame.total());
-
+    threshold(croppedFilteredFrame, croppedFilteredFrame, 200, 255, 3);
     // float whiteArea = countNonZero(croppedFilteredFrame);
     // float totalArea = croppedFilteredFrame.total();
     // float queueDensity = whiteArea/totalArea;

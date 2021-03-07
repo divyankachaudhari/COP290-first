@@ -31,7 +31,9 @@ void mouseHandler(int event, int x, int y, int flags, void* data_ptr) {
     }
 }
 
-void cropImage(Mat &croppedImage, Mat &bird_view, vector<pair<int, int>> &mouse_clicks, vector<pair<int, int>> &crop_this, userdata &data, Mat &h) {
+void cropImage(Mat &croppedImage, Mat &bird_view, userdata &data, Mat &h) {
+  vector<pair<int, int>> mouse_clicks(4, {0, 0});
+  vector<pair<int, int>> crop_this(4, {0, 0});
   for(int i=0; i<4; i++) {
       mouse_clicks[i].ff = data.points[i].x;
       mouse_clicks[i].ss = data.points[i].y;
@@ -70,7 +72,7 @@ Mat warpAndCrop(Mat sourceImage, userdata data, Mat h){
   // Mat h = findHomography(data.points, pts_dst);
   Mat warpCroppedFrame;
   warpPerspective(sourceImage, im_dst, h, size);
-  cropImage(warpCroppedFrame, sourceImage, mouse_clicks, crop_this, data, h);
+  cropImage(warpCroppedFrame, sourceImage, data, h);
 
   return warpCroppedFrame;
 }
@@ -79,7 +81,7 @@ userdata gettingInitialData(Mat inputImage){
 
   userdata data;
   data.im = inputImage;
-
+  cout << "Choose four points in anti-clockwise fashion, starting from top-left. \n Then press Enter." << endl;
   imshow("Image", inputImage);
   setMouseCallback("Image", mouseHandler, &data);
   waitKey(0);

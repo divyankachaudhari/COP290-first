@@ -20,7 +20,7 @@ Mat subtract_bg(Mat background, Mat current) {
 Mat filterImage(Mat subtractedImage){
   Mat croppedFilteredFrame;
 
-
+  threshold(subtractedImage, croppedFilteredFrame, 200, 255, 3);
 
   return croppedFilteredFrame;
 }

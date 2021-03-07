@@ -18,7 +18,7 @@ using namespace std;
 struct userdata;
 void mouseHandler(int event, int x, int y, int flags, void* data_ptr);
 
-void cropImage(Mat &croppedImage, Mat &bird_view, vector<pair<int, int>> &mouse_clicks, vector<pair<int, int>> &crop_this, userdata &data, Mat &h);
+void cropImage(Mat &croppedImage, Mat &bird_view, userdata &data, Mat &h);
 
 void destPoints(vector<Point2f> &pts_dst);
 
