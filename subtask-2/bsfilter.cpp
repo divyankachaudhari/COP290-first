@@ -14,6 +14,7 @@ Mat backgroundSubtractImage(Mat warpCroppedFrame){
   return subtractedImage;
 }
 
+
 Mat filterImage(Mat subtractedImage){
   Mat croppedFilteredFrame;
 
