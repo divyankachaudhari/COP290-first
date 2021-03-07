@@ -9,6 +9,11 @@
 using namespace cv;
 using namespace std;
 
+// //TO DO:
+// 1. Hardcoded file names, change
+// 2. Clean the code
+// 3. threshold add -- optional
+// 4. comment the code
 
 struct userdata {
     Mat im;
@@ -27,7 +32,7 @@ int main(int argc, char** argv) {
     //
     // // Check if file exists; return if it doesn't
     // if(checkFile(isFileExist(name), isImageFile(name)) == -1) {return 0;}
-    string name = "bg.jpg";
+    string name = "bg.png";
 
     Mat im_src = imread(name);
     cvtColor(im_src, im_src, COLOR_BGR2GRAY);
@@ -97,15 +102,15 @@ int main(int argc, char** argv) {
     int c=1;
     ll d=0;
     while(1) {
-        // c += 1;
+        c += 1;
         d += 1;
-        // c %= 5;
+        c %= 5;
         Mat frame;
         vid >> frame;
         if(frame.empty()) break;
         // cvtColor(frame, frame, COLOR_BGR2GRAY);
-        // if(c == 1) {
-        if(d) {
+        if(c == 1) {
+        //if(d) {
             // imshow("Frame", frame);
             Mat warped_frame = Mat::zeros(size,CV_8UC1);  /// f grayscale karna hai abhi
             cvtColor(frame, frame, COLOR_BGR2GRAY);

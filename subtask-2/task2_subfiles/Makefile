@@ -1,14 +1,6 @@
-CC = g++
-CFLAGS = -g -Wall
-TARGET = subtask2
-THREAD = -pthread
-LIBS = pkg-config --cflags --libs opencv
-
-all: $(TARGET)
-
-
-$(TARGET): $(TARGET).cpp
-	$(CC) $(TARGET).cpp warpAndCrop.cpp bsfilter.cpp densities.cpp -o $(TARGET) $(CFLAGS) $(THREAD) `$(LIBS)`
-	./$(TARGET)
+run:
+	g++ -ggdb subtask2.cpp warpAndCrop.cpp bsfilter.cpp densities.cpp -o subtask2 `pkg-config --cflags --libs opencv`
+	./subtask2
+	python3 plot.py
 clean:
-	$(RM) $(TARGET)
+	rm -rf subtask2

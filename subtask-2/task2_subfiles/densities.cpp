@@ -10,7 +10,8 @@ float queueDensity(Mat croppedFilteredFrame){
     for(int i=0; i<croppedFilteredFrame.rows; i++) {
         for(int j=0; j<croppedFilteredFrame.cols; j++) {
             float v = (float)croppedFilteredFrame.at<uchar>(i, j);
-            if(v > 10) white++;
+
+            if(v > 8) white++;
             // cout<<v<<" ";
         }
         // cout<<endl;
@@ -26,7 +27,7 @@ float queueDensity(Mat croppedFilteredFrame){
 float movingDensity(Mat previousFrame, Mat currentFrame){
 
   Mat flow(previousFrame.size(), CV_32FC2);
-  calcOpticalFlowFarneback(previousFrame, currentFrame, flow, 0.5, 3, 15, 3, 5, 1.2, 0);
+  calcOpticalFlowFarneback(previousFrame, currentFrame, flow,0.5, 3, 15, 3, 5, 1.2, 0);
 
   Mat flow_parts[2];
 
@@ -52,5 +53,5 @@ float movingDensity(Mat previousFrame, Mat currentFrame){
 
   float movingDensity = movement/maxMovement;
 
-  return movingDensity;
+  return 2.3*movingDensity;
 }
