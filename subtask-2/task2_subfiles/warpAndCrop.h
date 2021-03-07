@@ -2,6 +2,11 @@
 #define WARPANDCROP_H
 
 #include <opencv2/opencv.hpp>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <string>
+#include <fstream>
+#include <regex>
 #include <iostream>
 
 #define pb push_back
@@ -19,6 +24,12 @@ struct userdata;
 void mouseHandler(int event, int x, int y, int flags, void* data_ptr);
 
 void cropImage(Mat &croppedImage, Mat &bird_view, userdata &data, Mat &h);
+
+bool isImageFile(string str);
+
+bool isFileExist (const std::string& name);
+
+int checkFile(bool check1, bool check2);
 
 void destPoints(vector<Point2f> &pts_dst);
 

@@ -1,5 +1,10 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <string>
+#include <fstream>
+#include <regex>
 #include "warpAndCrop.h"
 
 #define pb push_back
@@ -52,6 +57,29 @@ void cropImage(Mat &croppedImage, Mat &bird_view, userdata &data, Mat &h) {
   Mat ROI(bird_view, Rect(crop_this[0].ff, crop_this[0].ss, crop_w, crop_h));
 
   ROI.copyTo(croppedImage);
+}
+
+bool isImageFile(string str) {
+  // Regex to check valid image file extension.
+  const regex pattern("[^\\s]+(.*?)\\.(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$");
+  if (str.empty()){ return false; }
+  if(regex_match(str, pattern)){ return true;}
+  else { return false;}
+}
+
+bool isFileExist (const std::string& name) {
+  struct stat buffer;
+  return (stat (name.c_str(), &buffer) == 0);
+}
+
+int checkFile(bool check1, bool check2) {
+  if (check1 == false || check2 == false) {
+      cout << "Hold up! \nMission failed succesfully: Could not find that image, or maybe that file isn't an image. \nDid you check if that file exists in this directory?" << endl;
+      // wait for any key to be pressed
+      cin.get();
+      return -1;
+  }
+  return 0;
 }
 
 void destPoints(vector<Point2f> &pts_dst){
