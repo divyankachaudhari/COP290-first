@@ -14,6 +14,7 @@ using namespace std;
 // 2. Clean the code
 // 3. threshold add -- optional
 // 4. comment the code
+// 5. Make it faster later 
 
 struct userdata {
     Mat im;
