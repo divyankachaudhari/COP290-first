@@ -9,6 +9,6 @@ all: $(TARGET)
 
 $(TARGET): $(TARGET).cpp
 	$(CC) $(TARGET).cpp warpAndCrop.cpp bsfilter.cpp densities.cpp -o $(TARGET) $(CFLAGS) $(THREAD) `$(LIBS)`
-
+	./$(TARGET)
 clean:
 	$(RM) $(TARGET)
