@@ -104,7 +104,7 @@ userdata gettingInitialData(Mat inputImage){
   imshow("Image", inputImage);
   setMouseCallback("Image", mouseHandler, &data);
   waitKey(0);
-
+  destroyAllWindows();
   return data;
 }
 
@@ -160,7 +160,7 @@ float queueDensity(Mat croppedFilteredFrame){
 float movingDensity(Mat previousFrame, Mat currentFrame){
 
   Mat flow(previousFrame.size(), CV_32FC2);
-  calcOpticalFlowFarneback(previousFrame, currentFrame, flow,0.5, 3, 15, 3, 5, 1.2, 0);
+  calcOpticalFlowFarneback(previousFrame, currentFrame, flow, 0.5, 3, 15, 3, 5, 1.2, 0);
 
   Mat flow_parts[2];
 
@@ -228,6 +228,7 @@ int main(int argc, char** argv) {
 
     // Show image and wait for mouse clicks
     userdata data = gettingInitialData(im_temp);
+    clock_t start = clock();
 
     // Calculate the homography & warp source image to destination
     Mat h = findHomography(data.points, pts_dst);
@@ -250,7 +251,16 @@ int main(int argc, char** argv) {
         cout<<"Error unable to open video"<<endl;
         return -1;
     }
-    ofstream out_file("method3.txt");
+    string name = "method2_";
+    string str_fx = to_string(fx);
+    str_fx = str_fx.substr(0, 4);
+    string str_fy = to_string(fy);
+    str_fy = str_fy.substr(0, 4);
+    name += str_fx;
+    name += "_";
+    name += str_fy;
+    name += ".txt";
+    ofstream out_file(name);
     Mat frame;
     vid >> frame;
     // resize(frame, frame, Size(), fx, fy, INTER_AREA);
@@ -298,22 +308,30 @@ int main(int argc, char** argv) {
             // imshow("subtracted", subtracted_warped_cropped);
             float queue_d = queueDensity(subtracted_warped_cropped);
 
-            float dynamic_d = movingDensity(prev_frame, cropped_warped_frame);
+            // float dynamic_d = movingDensity(prev_frame, cropped_warped_frame);
 
             prev_frame = cropped_warped_frame;
             prev_queu = (queue_d);
-            prev_dyna = (dynamic_d);
+            // prev_dyna = (dynamic_d);
             // out_file << d << " " << to_string(queue_d) << " " << to_string(dynamic_d) << endl;
             // cout << d << " " << queue_d << " " << dynamic_d <<endl;
             d %= mod;
         }
-        float diff = abs(prev_queu - prev_dyna);
-        out_file << d << " " << to_string(prev_queu) << " " << to_string(prev_dyna) << " " << to_string(diff) << " " << to_string(1/diff) << endl;
-        cout << d << " " << prev_queu << " " << prev_dyna << " " << 1/diff << endl;
+        // float diff = abs(prev_queu - prev_dyna);
+        // out_file << d << " " << to_string(prev_queu) << " " << to_string(prev_dyna) << " " << to_string(diff) << " " << to_string(1/diff) << endl;
+        // cout << d << " " << prev_queu << " " << prev_dyna << " " << 1/diff << endl;
+        cout << d << " " << prev_queu << endl;
+        out_file << d << " " << to_string(prev_queu) << " " << endl;
 
         char c = (char)waitKey(25);
         if(c == 27) break;
     }
+
+    double time = (double)(clock() - start)/CLOCKS_PER_SEC;
+    printf("Time taken: %.5fs\n", time);
+    out_file<<"Time taken: "<<to_string(time)<<endl;
+
+    // printf("Time taken: %.5fs\n", (double)(clock() - start)/CLOCKS_PER_SEC);
     out_file.close();
     vid.release();
     destroyAllWindows();

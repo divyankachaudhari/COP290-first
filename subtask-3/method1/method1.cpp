@@ -111,6 +111,7 @@ userdata gettingInitialData(Mat inputImage){
   setMouseCallback("Image", mouseHandler, &data);
   waitKey(0);
 
+  destroyAllWindows();
   return data;
 }
 
@@ -221,6 +222,13 @@ int main(int argc, char** argv) {
     // Show image and wait for mouse clicks
     userdata data = gettingInitialData(im_temp);
 
+    // auto start = chrono::high_resolution_clock::now();
+    // ios_base::sync_with_stdio(false);
+
+    // time_t start, end;
+    // time(&start);
+    clock_t start = clock();
+
     // Calculate the homography & warp source image to destination
     Mat h = findHomography(data.points, pts_dst);
     warpPerspective(im_src, im_dst, h, size);
@@ -242,7 +250,15 @@ int main(int argc, char** argv) {
         cout<<"Error unable to open video"<<endl;
         return -1;
     }
-    ofstream out_file("method1.txt");
+    string name = "method1_";
+    int v = atoi(argv[3]);
+    string v_str = to_string(v);
+    if(v < 10) {
+        v_str = "0" + v_str;
+    }
+    name += v_str;
+    name += ".txt";
+    ofstream out_file(name);
     Mat frame;
     vid >> frame;
     // cvtColor(frame, frame, COLOR_BGR2GRAY);
@@ -287,22 +303,37 @@ int main(int argc, char** argv) {
             // imshow("subtracted", subtracted_warped_cropped);
             float queue_d = queueDensity(subtracted_warped_cropped);
 
-            float dynamic_d = movingDensity(prev_frame, cropped_warped_frame);
+            // float dynamic_d = movingDensity(prev_frame, cropped_warped_frame);
 
             prev_frame = cropped_warped_frame;
             prev_queu = (queue_d);
-            prev_dyna = (dynamic_d);
+            // prev_dyna = (dynamic_d);
             // out_file << d << " " << to_string(queue_d) << " " << to_string(dynamic_d) << endl;
             // cout << d << " " << queue_d << " " << dynamic_d <<endl;
             d %= mod;
         }
         float diff = abs(prev_queu - prev_dyna);
-        out_file << d << " " << to_string(prev_queu) << " " << to_string(prev_dyna) << " " << to_string(diff) << " " << to_string(1/diff) << endl;
-        cout << d << " " << prev_queu << " " << prev_dyna << " " << 1/diff << endl;
+        out_file << d << " " << to_string(prev_queu) << " " << endl;
+        cout << d << " " << prev_queu << " " << endl;
 
         char c = (char)waitKey(25);
         if(c == 27) break;
     }
+    // time(&end);
+    // double time_val = double(end-start);
+    // cout<<"Time taken: "<<fixed<<time_val<<setprecision(3)<<endl;
+
+    // auto end = chrono::high_resolution_clock::now();
+    // double time_taken = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+
+    // time_taken *= 1e-9;
+    // cout << "Time taken by program is : " << fixed << time_taken << setprecision(9);
+    // cout << " sec" << endl;
+
+    double time = (double)(clock() - start)/CLOCKS_PER_SEC;
+    printf("Time taken: %.5fs\n", time);
+    out_file<<"Time taken: "<<to_string(time)<<endl;
+
     out_file.close();
     vid.release();
     destroyAllWindows();
