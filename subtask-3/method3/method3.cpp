@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <string>
 #include <regex>
+#include <cstdlib>
+#include <pthread.h>
 #include "functions.h"
 
 #define NUM_THREADS 2
@@ -28,7 +30,7 @@ vector <Mat> imageQueue;
 vector<Mat> backgroundQueue;
 static pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 
-int subdivide(const Mat &img, const int rowDivisor, const int colDivisor, vector<Mat> &blocks)
+int subdivide(const Mat img, const int rowDivisor, const int colDivisor, vector<Mat> blocks)
 {
     /* Checking if the image was passed correctly */
     if(!img.data || img.empty())
@@ -109,6 +111,7 @@ int main(int argc, char** argv) {
         cout<<"Error unable to open video"<<endl;
         return -1;
     }
+    cout<< "Accessing video" << endl;
     ofstream out_file("out.txt");
     Mat frame;
     vid >> frame;
@@ -125,6 +128,7 @@ int main(int argc, char** argv) {
         if(c == 1) {
         //if(d) {
             // imshow("Frame", frame);
+            cout<< "Trying to enter the loop"<< endl;
             Mat warped_frame = Mat::zeros(size,CV_8UC1);  /// f grayscale karna hai abhi
             cvtColor(frame, frame, COLOR_BGR2GRAY);
             warpPerspective(frame, warped_frame, h, size);
@@ -133,21 +137,23 @@ int main(int argc, char** argv) {
             // imshow("View corrected", warped_frame);
             // imshow("bg_warp", bg_warp);
             int one = 1;
-            subdivide(cropped_warped_frame, one, NUM_THREADS, imageQueue);
-            subdivide(cropped_bg_warp, one, NUM_THREADS, backgroundQueue);
+            cout<< "trying to subdivide image"<< endl;
+            subdivide(cropped_warped_frame, one, 4, imageQueue);
+            subdivide(cropped_bg_warp, one, 4, backgroundQueue);
 
             // print_pixels(subtracted_warped);
             // imshow("subtracted", subtracted_warped_cropped);
 
-
-            vector<struct queue_struct> td;
+            cout<< "Entering threads"<< endl;
+            //vector<struct queue_struct> td;
+            struct queue_struct td[NUM_THREADS];
             float queue_d =0;
               /* Create the threads */
              pthread_t tids[NUM_THREADS];
              for(int i = 0; i < NUM_THREADS; i++) {
 
                td[i].num = i;
-                 pthread_create(&tids[i], NULL, startProcessing, &td[i]);
+                 pthread_create(&tids[i], NULL, startProcessing, (void *)&td[i]);
                }
 
              /* Reap the threads */
@@ -157,6 +163,7 @@ int main(int argc, char** argv) {
                }
 
              imageQueue.clear();
+             backgroundQueue.clear();
 
 
 
@@ -183,6 +190,7 @@ void* startProcessing(void* args) {
    /* Each thread grabs an image from imageQueue, removes it from the
       queue, and then processes it. The grabbing and removing are done
       under a lock */
+      cout<< "In the thread" << endl;
       float queue_d = 0;
       struct queue_struct *args_struct =  (struct queue_struct*) args;
   Mat image;
