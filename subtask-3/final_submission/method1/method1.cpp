@@ -39,11 +39,6 @@ int main(int argc, char** argv) {
     // Show image and wait for mouse clicks
     userdata data = gettingInitialData(im_temp);
 
-    // auto start = chrono::high_resolution_clock::now();
-    // ios_base::sync_with_stdio(false);
-
-    // time_t start, end;
-    // time(&start);
     clock_t start = clock();
 
     // Calculate the homography & warp source image to destination
@@ -90,7 +85,6 @@ int main(int argc, char** argv) {
     cropImage(cropped_warped_frame, warped_frame,data, h);
 
     Mat subtracted_warped_cropped = subtract_bg(cropped_bg_warp, cropped_warped_frame);
-    // print_pixels(subtracted_warped);
 
 
     Mat prev_frame = cropped_warped_frame;
@@ -113,13 +107,10 @@ int main(int argc, char** argv) {
             Mat subtracted_warped_cropped = subtract_bg(cropped_bg_warp, cropped_warped_frame);
             float queue_d = queueDensity(subtracted_warped_cropped);
 
-            // float dynamic_d = movingDensity(prev_frame, cropped_warped_frame);
 
             prev_frame = cropped_warped_frame;
             prev_queu = (queue_d);
-            // prev_dyna = (dynamic_d);
-            // out_file << d << " " << to_string(queue_d) << " " << to_string(dynamic_d) << endl;
-            // cout << d << " " << queue_d << " " << dynamic_d <<endl;
+
             d %= mod;
         }
         float diff = abs(prev_queu - prev_dyna);
@@ -129,16 +120,7 @@ int main(int argc, char** argv) {
         char c = (char)waitKey(25);
         if(c == 27) break;
     }
-    // time(&end);
-    // double time_val = double(end-start);
-    // cout<<"Time taken: "<<fixed<<time_val<<setprecision(3)<<endl;
 
-    // auto end = chrono::high_resolution_clock::now();
-    // double time_taken = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
-
-    // time_taken *= 1e-9;
-    // cout << "Time taken by program is : " << fixed << time_taken << setprecision(9);
-    // cout << " sec" << endl;
 
     double time = (double)(clock() - start)/CLOCKS_PER_SEC;
     printf("Time taken: %.5fs\n", time);

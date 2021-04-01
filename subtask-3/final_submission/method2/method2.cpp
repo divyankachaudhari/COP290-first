@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     // // Check if file exists; return if it doesn't
     if(checkFile(isFileExist(argv[1]), isImageFile(argv[1])) == -1) {return 0;}
 
-    cvtColor(im_src, im_src, COLOR_BGR2GRAY);-
+    cvtColor(im_src, im_src, COLOR_BGR2GRAY);
     Size size = im_src.size();
 
     Mat im_dst = Mat::zeros(size,CV_8UC1);
