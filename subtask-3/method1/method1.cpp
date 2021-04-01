@@ -92,9 +92,6 @@ Mat warpAndCrop(Mat sourceImage, userdata data, Mat h){
   Mat im_dst = Mat::zeros(size,CV_8UC3);
   vector<pair<int, int>> mouse_clicks(4, {0, 0});
   vector<pair<int, int>> crop_this(4, {0, 0});
-  // vector<Point2f> pts_dst;
-  // destPoints(pts_dst);
-  // Mat h = findHomography(data.points, pts_dst);
   Mat warpCroppedFrame;
   warpPerspective(sourceImage, im_dst, h, size);
   cropImage(warpCroppedFrame, sourceImage, data, h);
@@ -152,10 +149,8 @@ float queueDensity(Mat croppedFilteredFrame){
         for(int j=0; j<croppedFilteredFrame.cols; j++) {
             float v = (float)croppedFilteredFrame.at<uchar>(i, j);
 
-            if(v > 8) white++;
-            // cout<<v<<" ";
+            if(v > 8) white++; // thresholding
         }
-        // cout<<endl;
     }
     return (white)/((float)croppedFilteredFrame.total());
     threshold(croppedFilteredFrame, croppedFilteredFrame, 200, 255, 3);
@@ -200,8 +195,8 @@ float movingDensity(Mat previousFrame, Mat currentFrame){
 
 
 int main(int argc, char** argv) {
-//--------------------------------taking user input points to warp perspective
 
+//--taking user input points to warp perspective
     int parameter = atoi(argv[3]);
     Mat im_src = imread(argv[1]);
     // // Check if file exists; return if it doesn't
@@ -210,7 +205,6 @@ int main(int argc, char** argv) {
     cvtColor(im_src, im_src, COLOR_BGR2GRAY);
     Size size = im_src.size();
     Mat im_dst = Mat::zeros(size,CV_8UC1);
-    // cvtColor(im_dst, im_dst, COLOR_BGR2GRAY);
 
     // Create vector and add destination points to it
     vector<Point2f> pts_dst;
@@ -233,23 +227,25 @@ int main(int argc, char** argv) {
     Mat h = findHomography(data.points, pts_dst);
     warpPerspective(im_src, im_dst, h, size);
 
-    Mat bg_warp = Mat::zeros(size,CV_8UC1);  /// f grayscale karna hai abhi
+    Mat bg_warp = Mat::zeros(size,CV_8UC1);
     warpPerspective(im_src, bg_warp, h, size);
 
     Mat cropped_bg_warp;
     cropImage(cropped_bg_warp, bg_warp, data, h);
-    // cvtColor(bg_warp, bg_warp, COLOR_BGR2GRAY);
-//------------------------------------------------------------------------------------------
+
+
+    // Start video processing
     VideoCapture vid(argv[2]);
     // VideoCapture vid("trafficsmall.mp4");
 
     double n = vid.get(CAP_PROP_FRAME_COUNT);
-    // print number of frames
-    // cout << n;
+    // n - number of frames in video
     if(!vid.isOpened()) {
         cout<<"Error unable to open video"<<endl;
         return -1;
     }
+
+    // naming output files with proper format
     string name = "method1_";
     int v = atoi(argv[3]);
     string v_str = to_string(v);
@@ -258,23 +254,21 @@ int main(int argc, char** argv) {
     }
     name += v_str;
     name += ".txt";
+
+    // opening file
     ofstream out_file(name);
     Mat frame;
     vid >> frame;
-    // cvtColor(frame, frame, COLOR_BGR2GRAY);
-        // imshow("Frame", frame);
+
     Mat warped_frame = Mat::zeros(size,CV_8UC1);
     cvtColor(frame, frame, COLOR_BGR2GRAY);
     warpPerspective(frame, warped_frame, h, size);
     Mat cropped_warped_frame;
     cropImage(cropped_warped_frame, warped_frame,data, h);
-    // imshow("View corrected", warped_frame);
-    // imshow("bg_warp", bg_warp);
+
     Mat subtracted_warped_cropped = subtract_bg(cropped_bg_warp, cropped_warped_frame);
     // print_pixels(subtracted_warped);
-    // imshow("subtracted", subtracted_warped_cropped);
-    // float v = queueDensity(subtracted_warped_cropped);
-    // out_file << to_string(v) << endl;
+
 
     Mat prev_frame = cropped_warped_frame;
     int c = 0;
@@ -287,20 +281,13 @@ int main(int argc, char** argv) {
         Mat frame;
         vid >> frame;
         if(frame.empty()) break;
-        // cvtColor(frame, frame, COLOR_BGR2GRAY);
         if(c == 1) {
-        //if(d) {
-            // imshow("Frame", frame);
             Mat warped_frame = Mat::zeros(size,CV_8UC1);
             cvtColor(frame, frame, COLOR_BGR2GRAY);
             warpPerspective(frame, warped_frame, h, size);
             Mat cropped_warped_frame;
             cropImage(cropped_warped_frame, warped_frame, data, h);
-            // imshow("View corrected", warped_frame);
-            // imshow("bg_warp", bg_warp);
             Mat subtracted_warped_cropped = subtract_bg(cropped_bg_warp, cropped_warped_frame);
-            // print_pixels(subtracted_warped);
-            // imshow("subtracted", subtracted_warped_cropped);
             float queue_d = queueDensity(subtracted_warped_cropped);
 
             // float dynamic_d = movingDensity(prev_frame, cropped_warped_frame);
