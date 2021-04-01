@@ -4,3 +4,5 @@ clean:
 	rm -rf subtask2
 run:
 	./method3 bg.png trafficvideosmall.mp4
+plot:
+	python3 plot.py

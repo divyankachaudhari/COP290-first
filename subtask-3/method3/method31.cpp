@@ -84,145 +84,152 @@ return 0;
 
 int main(int argc, char** argv) {
 //--------------------------------taking user input points to warp perspective
-    int num_threads;
-    cout<<"Enter number of threads: ";
-    cin>> num_threads;
-    Mat im_src = imread(argv[1]);
-    // // Check if file exists; return if it doesn't
-    if(checkFile(isFileExist(argv[1]), isImageFile(argv[1])) == -1) {return 0;}
+Mat im_src = imread(argv[1]);
+// // Check if file exists; return if it doesn't
+if(checkFile(isFileExist(argv[1]), isImageFile(argv[1])) == -1) {return 0;}
+cvtColor(im_src, im_src, COLOR_BGR2GRAY);
+Size size = im_src.size();
+Mat im_dst = Mat::zeros(size,CV_8UC1);
 
-    cvtColor(im_src, im_src, COLOR_BGR2GRAY);
-    Size size = im_src.size();
-    Mat im_dst = Mat::zeros(size,CV_8UC1);
+// Create vector and add destination points to it
+vector<Point2f> pts_dst;
+destPoints(pts_dst);
 
-    // Create vector and add destination points to it
-    vector<Point2f> pts_dst;
-    destPoints(pts_dst);
+// Set data for mouse event
+Mat im_temp = im_src.clone();
 
-    // Set data for mouse event
-    Mat im_temp = im_src.clone();
+// Show image and wait for mouse clicks
+userdata data = gettingInitialData(im_temp);
+Mat h = findHomography(data.points, pts_dst);
+warpPerspective(im_src, im_dst, h, size);
 
-    // Show image and wait for mouse clicks
-    userdata data = gettingInitialData(im_temp);
-    auto begin = std::chrono::high_resolution_clock::now();
-    clock_t start = clock();
-    // Calculate the homography & warp source image to destination
-    Mat h = findHomography(data.points, pts_dst);
-    warpPerspective(im_src, im_dst, h, size);
+Mat bg_warp = Mat::zeros(size,CV_8UC1);  /// f grayscale karna hai abhi
+warpPerspective(im_src, bg_warp, h, size);
 
-    Mat bg_warp = Mat::zeros(size,CV_8UC1);  /// f grayscale karna hai abhi
-    warpPerspective(im_src, bg_warp, h, size);
+Mat cropped_bg_warp;
+cropImage(cropped_bg_warp, bg_warp, data, h);
+ofstream time_file("time.txt");
+    for(int num_threads =1; num_threads< 16; num_threads++){
+      // int num_threads;
+      // cout<<"Enter number of threads: ";
+      // cin>> num_threads;
 
-    Mat cropped_bg_warp;
-    cropImage(cropped_bg_warp, bg_warp, data, h);
-    // cvtColor(bg_warp, bg_warp, COLOR_BGR2GRAY);
-//------------------------------------------------------------------------------------------
-    VideoCapture vid(argv[2]);
-    // VideoCapture vid("trafficsmall.mp4");
 
-    double n = vid.get(CAP_PROP_FRAME_COUNT);
-    // print number of frames
-    // cout << n;
-    if(!vid.isOpened()) {
-        cout<<"Error unable to open video"<<endl;
-        return -1;
+
+      auto begin = std::chrono::high_resolution_clock::now();
+      clock_t start = clock();
+      // Calculate the homography & warp source image to destination
+
+      // cvtColor(bg_warp, bg_warp, COLOR_BGR2GRAY);
+  //------------------------------------------------------------------------------------------
+      VideoCapture vid(argv[2]);
+      // VideoCapture vid("trafficsmall.mp4");
+
+      double n = vid.get(CAP_PROP_FRAME_COUNT);
+      // print number of frames
+      // cout << n;
+      if(!vid.isOpened()) {
+          cout<<"Error unable to open video"<<endl;
+          return -1;
+      }
+      // cout<< "Accessing video" << endl;
+
+      string name = "method3_";
+      if(num_threads < 10) name += '0';
+      name += to_string(num_threads);
+      name += ".txt";
+      ofstream out_file(name);
+
+      Mat frame;
+      vid >> frame;
+      int c = 1;
+      ll d = 0;
+      while(1) {
+          c += 1;
+          d += 1;
+          c %= 5;
+          Mat frame;
+          vid >> frame;
+          if(frame.empty()) break;
+          // cvtColor(frame, frame, COLOR_BGR2GRAY);
+          if(c == 1) {
+          //if(d) {
+              // imshow("Frame", frame);
+              // cout<< "Trying to enter the loop"<< endl;
+              Mat warped_frame = Mat::zeros(size,CV_8UC1);  /// f grayscale karna hai abhi
+              cvtColor(frame, frame, COLOR_BGR2GRAY);
+              warpPerspective(frame, warped_frame, h, size);
+              Mat cropped_warped_frame;
+              cropImage(cropped_warped_frame, warped_frame, data, h);
+              // imshow("View corrected", warped_frame);
+              // imshow("bg_warp", bg_warp);
+              int row = 4;
+              int column = 16;
+              // cout<< "trying to subdivide image"<< endl;
+              subdivide(cropped_warped_frame, 1, column, imageQueue);
+              subdivide(cropped_bg_warp, 1, column, backgroundQueue);
+
+              // print_pixels(subtracted_warped);
+              // imshow("subtracted", subtracted_warped_cropped);
+
+              // cout<< "Entering threads"<< endl;
+              //vector<struct queue_struct> td;
+              struct queue_struct td[num_threads];
+              float queue_d =0;
+                /* Create the threads */
+               pthread_t tids[num_threads];
+               for(int i = 0; i < num_threads; i++) {
+
+                 td[i].num = i;
+                   pthread_create(&tids[i], NULL, startProcessing, (void *)&td[i]);
+                 }
+
+               /* Reap the threads */
+               for(int i = 0; i < num_threads; i++) {
+                   pthread_join(tids[i], NULL);
+                  queue_d += td[i].queue_density;
+                 }
+
+               imageQueue.clear();
+               backgroundQueue.clear();
+
+
+
+
+              // float dynamic_d = movingDensity(prev_frame, cropped_warped_frame);
+
+              // prev_frame = cropped_warped_frame;
+              out_file << d << " " << to_string(queue_d) <<  endl;
+              cout << d << " " << queue_d <<endl;
+              d %= mod;
+          }
+
+          char c = (char)waitKey(25);
+          if(c == 27) break;
+      }
+
+      // time(&method4_end);
+      // int time = (method4_end - method4_start);
+      auto end = std::chrono::high_resolution_clock::now();
+     auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
+     printf("Wall clock time taken: %.3f seconds.\n", elapsed.count() * 1e-9);
+
+      double time = (double)(clock() - start)/CLOCKS_PER_SEC;
+      // time /= num_threads;
+
+      printf("CPU clock time taken: %.5f seconds.\n", time);
+
+      // // for(int i=0; i<d; i++) {
+      // //     out_file << i+1 << " " << ans[i] << endl;
+      // // }
+      out_file << "CPU clock time taken: " << to_string(time) << endl;
+      out_file << "Wall clock time taken: " << to_string(elapsed.count() * 1e-9) << endl;
+      time_file << num_threads << " " << to_string(time) << " " << to_string(elapsed.count() * 1e-9) << endl;
+      out_file.close();
+      vid.release();
+      destroyAllWindows();
     }
-    // cout<< "Accessing video" << endl;
-
-    string name = "method3_";
-    if(num_threads < 10) name += '0';
-    name += to_string(num_threads);
-    name += ".txt";
-    ofstream out_file(name);
-
-    Mat frame;
-    vid >> frame;
-    int c = 1;
-    ll d = 0;
-    while(1) {
-        c += 1;
-        d += 1;
-        c %= 5;
-        Mat frame;
-        vid >> frame;
-        if(frame.empty()) break;
-        // cvtColor(frame, frame, COLOR_BGR2GRAY);
-        if(c == 1) {
-        //if(d) {
-            // imshow("Frame", frame);
-            // cout<< "Trying to enter the loop"<< endl;
-            Mat warped_frame = Mat::zeros(size,CV_8UC1);  /// f grayscale karna hai abhi
-            cvtColor(frame, frame, COLOR_BGR2GRAY);
-            warpPerspective(frame, warped_frame, h, size);
-            Mat cropped_warped_frame;
-            cropImage(cropped_warped_frame, warped_frame, data, h);
-            // imshow("View corrected", warped_frame);
-            // imshow("bg_warp", bg_warp);
-            int row = 4;
-            int column = 16;
-            // cout<< "trying to subdivide image"<< endl;
-            subdivide(cropped_warped_frame, 1, column, imageQueue);
-            subdivide(cropped_bg_warp, 1, column, backgroundQueue);
-
-            // print_pixels(subtracted_warped);
-            // imshow("subtracted", subtracted_warped_cropped);
-
-            // cout<< "Entering threads"<< endl;
-            //vector<struct queue_struct> td;
-            struct queue_struct td[num_threads];
-            float queue_d =0;
-              /* Create the threads */
-             pthread_t tids[num_threads];
-             for(int i = 0; i < num_threads; i++) {
-
-               td[i].num = i;
-                 pthread_create(&tids[i], NULL, startProcessing, (void *)&td[i]);
-               }
-
-             /* Reap the threads */
-             for(int i = 0; i < num_threads; i++) {
-                 pthread_join(tids[i], NULL);
-                queue_d += td[i].queue_density;
-               }
-
-             imageQueue.clear();
-             backgroundQueue.clear();
-
-
-
-
-            // float dynamic_d = movingDensity(prev_frame, cropped_warped_frame);
-
-            // prev_frame = cropped_warped_frame;
-            out_file << d << " " << to_string(queue_d) <<  endl;
-            cout << d << " " << queue_d <<endl;
-            d %= mod;
-        }
-
-        char c = (char)waitKey(25);
-        if(c == 27) break;
-    }
-
-    // time(&method4_end);
-    // int time = (method4_end - method4_start);
-    auto end = std::chrono::high_resolution_clock::now();
-   auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-   printf("Wall clock time taken: %.3f seconds.\n", elapsed.count() * 1e-9);
-
-    double time = (double)(clock() - start)/CLOCKS_PER_SEC;
-    // time /= num_threads;
-
-    printf("CPU clock time taken: %.5f seconds.\n", time);
-
-    // // for(int i=0; i<d; i++) {
-    // //     out_file << i+1 << " " << ans[i] << endl;
-    // // }
-    out_file << "CPU clock time taken: " << to_string(time) << endl;
-    out_file << "Wall clock time taken: " << to_string(elapsed.count() * 1e-9) << endl;
-
-    out_file.close();
-    vid.release();
-    destroyAllWindows();
+    time_file.close();
     return 0;
 }
 
