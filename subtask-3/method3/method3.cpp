@@ -9,7 +9,7 @@
 #include <pthread.h>
 #include "functions.h"
 
-#define NUM_THREADS 2
+#define NUM_THREADS 6
 
 #define mod (ll) 1e9 + 7
 using namespace cv;
@@ -22,7 +22,7 @@ struct userdata {
 
 struct queue_struct {
   int num;
-  int queue_density;
+  float queue_density;
 };
 
 void* startProcessing(void* args);
@@ -30,7 +30,7 @@ vector <Mat> imageQueue;
 vector<Mat> backgroundQueue;
 static pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 
-int subdivide(const Mat img, const int rowDivisor, const int colDivisor, vector<Mat> blocks)
+int subdivide(const Mat &img, const int rowDivisor, const int colDivisor, vector<Mat> &blocks)
 {
     /* Checking if the image was passed correctly */
     if(!img.data || img.empty())
@@ -137,9 +137,10 @@ int main(int argc, char** argv) {
             // imshow("View corrected", warped_frame);
             // imshow("bg_warp", bg_warp);
             int one = 1;
+            int four = 4;
             cout<< "trying to subdivide image"<< endl;
-            subdivide(cropped_warped_frame, one, 4, imageQueue);
-            subdivide(cropped_bg_warp, one, 4, backgroundQueue);
+            subdivide(cropped_warped_frame, one, 6, imageQueue);
+            subdivide(cropped_bg_warp, one, 6, backgroundQueue);
 
             // print_pixels(subtracted_warped);
             // imshow("subtracted", subtracted_warped_cropped);
@@ -201,9 +202,31 @@ void* startProcessing(void* args) {
   if(!imageQueue.empty()) {
      image = imageQueue[0];
      image2 = backgroundQueue[0];
-     Mat subtracted_warped_cropped = subtract_bg(image2, image);
 
-     queue_d += queueDensity(subtracted_warped_cropped);
+
+     Size size = image2.size();
+     Mat sub_image_return = Mat::zeros(size,CV_8UC1);
+     for (int y = 0; y < sub_image_return.rows; y++) {
+         for (int x = 0; x < sub_image_return.cols; x++) {
+                     // Subtract the two images
+                     sub_image_return.at<uchar>(y, x) = image2.at<uchar>(y, x) - image.at<uchar>(y, x);
+         }
+     }
+
+     Mat subtracted_warped_cropped = sub_image_return;
+
+
+     float white = 0.0;
+     for(int i=0; i<subtracted_warped_cropped.rows; i++) {
+         for(int j=0; j<subtracted_warped_cropped.cols; j++) {
+             float v = (float)subtracted_warped_cropped.at<uchar>(i, j);
+
+             if(v > 8) white++;
+         }
+
+     }
+     queue_d += (white)/((float)subtracted_warped_cropped.total());
+
      vector<Mat>::iterator it;
 
      it = imageQueue.begin();
@@ -228,9 +251,29 @@ void* startProcessing(void* args) {
       if(!imageQueue.empty()) {
         image = imageQueue[0];
         image2 = backgroundQueue[0];
-        Mat subtracted_warped_cropped = subtract_bg(image2, image);
 
-        queue_d += queueDensity(subtracted_warped_cropped);
+
+        Size size = image2.size();
+        Mat sub_image_return = Mat::zeros(size,CV_8UC1);
+        for (int y = 0; y < sub_image_return.rows; y++) {
+            for (int x = 0; x < sub_image_return.cols; x++) {
+                        // Subtract the two images
+                        sub_image_return.at<uchar>(y, x) = image2.at<uchar>(y, x) - image.at<uchar>(y, x);
+            }
+        }
+
+        Mat subtracted_warped_cropped = sub_image_return;
+
+        float white = 0.0;
+        for(int i=0; i<subtracted_warped_cropped.rows; i++) {
+            for(int j=0; j<subtracted_warped_cropped.cols; j++) {
+                float v = (float)subtracted_warped_cropped.at<uchar>(i, j);
+
+                if(v > 8) white++;
+            }
+
+        }
+        queue_d += (white)/((float)subtracted_warped_cropped.total());
 
         vector<Mat>::iterator it;
         it = imageQueue.begin();
