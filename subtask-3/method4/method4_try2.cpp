@@ -216,7 +216,7 @@ void* queue_threads(void *arg) {
         if(frame.empty()) break;
 
         c ++;
-        if(c%startf == 0) {
+        if((c-startf)%arg_struct->skip == 0) {
             Mat warped_frame = Mat::zeros(arg_struct->size, CV_8UC1);
             cvtColor(frame, frame, COLOR_BGR2GRAY);
             warpPerspective(frame, warped_frame, h, arg_struct->size);
@@ -326,7 +326,7 @@ int main(int argc, char** argv) {
     for(int i=0; i<num_threads; i++) {
         args[i].vid_name = argv[2];
         args[i].size = size;
-        args[i].skip = split;
+        args[i].skip = num_threads;
         args[i].start_frame = i;
         pthread_create(&ptids[i], NULL, queue_threads, (void *) &args[i]);
     }
