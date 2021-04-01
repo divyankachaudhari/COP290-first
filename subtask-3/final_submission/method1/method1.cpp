@@ -3,12 +3,7 @@
 #include <sys/stat.h>
 #include "functions.h"
 
-#define pb push_back
-#define fast ios_base::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
-#define endl "\n"
-#define ff first
-#define ss second
-#define ll long long int
+
 #define mod (ll) 1e9 + 7
 
 using namespace cv;
