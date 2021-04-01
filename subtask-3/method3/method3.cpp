@@ -136,11 +136,11 @@ int main(int argc, char** argv) {
             cropImage(cropped_warped_frame, warped_frame, data, h);
             // imshow("View corrected", warped_frame);
             // imshow("bg_warp", bg_warp);
-            int one = 1;
-            int four = 4;
+            int row = 1;
+            int column = 4;
             cout<< "trying to subdivide image"<< endl;
-            subdivide(cropped_warped_frame, one, 6, imageQueue);
-            subdivide(cropped_bg_warp, one, 6, backgroundQueue);
+            subdivide(cropped_warped_frame, row, column, imageQueue);
+            subdivide(cropped_bg_warp, row, column, backgroundQueue);
 
             // print_pixels(subtracted_warped);
             // imshow("subtracted", subtracted_warped_cropped);
