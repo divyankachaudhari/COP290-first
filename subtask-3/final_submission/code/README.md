@@ -1,4 +1,4 @@
-# How to run:
+## How to run:
 1) Compile 
     use ```make compile[method number]``` 
     Eg: To compile method 1, use `make compile1`.
@@ -6,9 +6,9 @@
     use ```./method[method number] [background image] [video file]```
     It will prompt user for parameters accordingly.
 
-# Clean executable
+## Clean executable
     use ```make clean[method number]```
 
-# Plotting:
+## Plotting:
     Refer to python files in analysis folder.
     
