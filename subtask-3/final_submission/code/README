@@ -1,0 +1,4 @@
+Compile each method by using `make compile[method number]`. To compile method 1, use `make compile1`.
+Similarly, to clean the executable, use `make clean[method number]`.
+
+To run any method, first compile it and then enter `./method[method number] [background image] [video file]` in the command line. It will then ask the parameter accordingly. 
