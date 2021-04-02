@@ -1,0 +1,2 @@
+CPU clock time taken: 868.725055
+Wall clock time taken: 122.159188
